@@ -7,7 +7,15 @@ const prisma = new PrismaClient({
 })
 
 app.get('/games', async (request, response) => {
-    const games = await prisma.game.findMany();
+    const games = await prisma.game.findMany({
+        include: {
+            _count: {
+                select: {
+                    ads: true,
+                }
+            }
+        }
+    });
 
     return response.json(games);
 });
@@ -16,15 +24,16 @@ app.post('/ads', (request, response) => {
     return response.status(201).json([]);
 });
 
-app.get('/games/:id/ads', (request, response) => {
-    // const gameId = request.params.id;
+app.get('/games/:id/ads', async (request, response) => {
+    const gameId = request.params.id;
 
-    return response.json([
-        { id: 1, title: 'Ad 1' },
-        { id: 2, title: 'Ad 2' },
-        { id: 3, title: 'Ad 3' },
-        { id: 4, title: 'Ad 4' },
-    ])
+    const ads = await prisma.ad.findMany({
+        where: {
+            gameId,
+        }    
+    })
+
+    return response.json(ads);
 })
 app.get('/ads/:id/discord', (request, response) => {
     // const adId = request.params.id;
